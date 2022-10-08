@@ -23,6 +23,10 @@ type fileForTranslate struct {
 
 func main() {
 	args := os.Args[1:]
+	if len(args) == 0 {
+		fmt.Println("No args")
+		os.Exit(0)
+	}
 	for _, cat := range args {
 		t := translator.New()
 		var filesForTranslate []fileForTranslate
