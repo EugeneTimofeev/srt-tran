@@ -27,23 +27,27 @@ func main() {
 		fmt.Println("No args")
 		os.Exit(0)
 	}
-	for _, cat := range args {
-		t := translator.New()
+	for _, cat := range args {		
 		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
 		for _, v := range filesForTranslate {
-			v.makeFileForTranslate()
-			for j := 0; j < len(v.fileLines); j++ {
-				result, err := t.Translate(v.fileLines[j].stringsEn, "en", "ru")
-				if err != nil {
-					log.Fatal(err)
-				} else {
-					v.fileLines[j].stringsRu = result.Text
-				}
-			}
-			v.saveRuFiles()
+			doMake(&v)
 		}
 	}
+}
+
+func doMake(fft *fileForTranslate) {
+	t := translator.New()
+	fft.makeFileForTranslate()
+	for j := 0; j < len(fft.fileLines); j++ {
+		result, err := t.Translate(fft.fileLines[j].stringsEn, "en", "ru")
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fft.fileLines[j].stringsRu = result.Text
+		}
+	}
+	fft.saveRuFiles()
 }
 
 func (fft *fileForTranslate) makeFileForTranslate() {
