@@ -27,16 +27,16 @@ func main() {
 		fmt.Println("No args")
 		os.Exit(0)
 	}
-	for _, cat := range args {		
+	for _, cat := range args {
 		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
 		for _, v := range filesForTranslate {
-			doMake(&v)
+			v.doMake()
 		}
 	}
 }
 
-func doMake(fft *fileForTranslate) {
+func (fft *fileForTranslate) doMake() {
 	t := translator.New()
 	fft.makeFileForTranslate()
 	for j := 0; j < len(fft.fileLines); j++ {
