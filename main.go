@@ -89,6 +89,7 @@ func (fft *fileForTranslate) saveRuFiles() {
 			log.Fatal(err)
 		}
 	}
+	fmt.Println("Done", ruFile)
 }
 
 func getSRT(fft *[]fileForTranslate, cat string) {
