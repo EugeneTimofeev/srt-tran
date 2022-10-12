@@ -31,17 +31,17 @@ func main() {
 		t := translator.New()
 		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
-		for i := 0; i < len(filesForTranslate); i++ {
-			filesForTranslate[i].makeFileForTranslate()
-			for j := 0; j < len(filesForTranslate[i].fileLines); j++ {
-				result, err := t.Translate(filesForTranslate[i].fileLines[j].stringsEn, "en", "ru")
+		for _, v := range filesForTranslate {
+			v.makeFileForTranslate()
+			for j := 0; j < len(v.fileLines); j++ {
+				result, err := t.Translate(v.fileLines[j].stringsEn, "en", "ru")
 				if err != nil {
 					log.Fatal(err)
 				} else {
-					filesForTranslate[i].fileLines[j].stringsRu = result.Text
+					v.fileLines[j].stringsRu = result.Text
 				}
 			}
-			filesForTranslate[i].saveRuFiles()
+			v.saveRuFiles()
 		}
 	}
 }
@@ -58,7 +58,6 @@ func (fft *fileForTranslate) makeFileForTranslate() {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		str = scanner.Text()
-		//fmt.Println("ff.fileLines[i].stringsEn", ff.fileLines[i].stringsEn)
 		if len(fft.fileLines[i].stringsEn)+len(str) <= 4000 {
 			fft.fileLines[i].stringsEn = fft.fileLines[i].stringsEn + "\n" + str
 		} else {
@@ -74,8 +73,12 @@ func (fft *fileForTranslate) makeFileForTranslate() {
 
 func (fft *fileForTranslate) saveRuFiles() {
 	ruFile := fft.fileName[0:len(fft.fileName)-4] + "_rus.srt"
-	f, err := os.Create(ruFile)
-	f, err = os.OpenFile(ruFile, os.O_APPEND|os.O_WRONLY, 0644)
+	_, err := os.Create(ruFile)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	f, err := os.OpenFile(ruFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 		return
