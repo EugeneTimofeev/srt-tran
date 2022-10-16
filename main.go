@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type linesForTranslate struct {
@@ -27,12 +28,18 @@ func main() {
 		fmt.Println("No args")
 		os.Exit(0)
 	}
+	var wg sync.WaitGroup
 	for _, cat := range args {
 		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
 		for _, v := range filesForTranslate {
-			v.doMake()
+			wg.Add(1)
+			go func(v fileForTranslate) {
+				defer wg.Done()
+				v.doMake()
+			}(v)
 		}
+		wg.Wait()
 	}
 }
 
