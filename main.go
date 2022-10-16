@@ -28,19 +28,20 @@ func main() {
 		fmt.Println("No args")
 		os.Exit(0)
 	}
-	var wg sync.WaitGroup
+
+	var filesForTranslate []fileForTranslate
 	for _, cat := range args {
-		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
-		for _, v := range filesForTranslate {
-			wg.Add(1)
-			go func(v fileForTranslate) {
-				defer wg.Done()
-				v.doMake()
-			}(v)
-		}
-		wg.Wait()
 	}
+	var wg sync.WaitGroup
+	for _, v := range filesForTranslate {
+		wg.Add(1)
+		go func(v fileForTranslate) {
+			defer wg.Done()
+			v.doMake()
+		}(v)
+	}
+	wg.Wait()
 }
 
 func (fft *fileForTranslate) doMake() {
