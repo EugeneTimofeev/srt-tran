@@ -65,7 +65,12 @@ func (fft *fileForTranslate) makeFileForTranslate() {
 		log.Fatal(err)
 	}
 	fft.fileLines = append(fft.fileLines, linesForTranslate{i, "", ""})
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		str = scanner.Text()
