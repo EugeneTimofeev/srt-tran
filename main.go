@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type linesForTranslate struct {
@@ -27,23 +28,33 @@ func main() {
 		fmt.Println("No args")
 		os.Exit(0)
 	}
+	var wg sync.WaitGroup
 	for _, cat := range args {
-		t := translator.New()
 		var filesForTranslate []fileForTranslate
 		getSRT(&filesForTranslate, cat)
 		for _, v := range filesForTranslate {
-			v.makeFileForTranslate()
-			for j := 0; j < len(v.fileLines); j++ {
-				result, err := t.Translate(v.fileLines[j].stringsEn, "en", "ru")
-				if err != nil {
-					log.Fatal(err)
-				} else {
-					v.fileLines[j].stringsRu = result.Text
-				}
-			}
-			v.saveRuFiles()
+			wg.Add(1)
+			go func(v fileForTranslate) {
+				defer wg.Done()
+				v.doMake()
+			}(v)
+		}
+		wg.Wait()
+	}
+}
+
+func (fft *fileForTranslate) doMake() {
+	t := translator.New()
+	fft.makeFileForTranslate()
+	for j := 0; j < len(fft.fileLines); j++ {
+		result, err := t.Translate(fft.fileLines[j].stringsEn, "en", "ru")
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			fft.fileLines[j].stringsRu = result.Text
 		}
 	}
+	fft.saveRuFiles()
 }
 
 func (fft *fileForTranslate) makeFileForTranslate() {
@@ -54,7 +65,12 @@ func (fft *fileForTranslate) makeFileForTranslate() {
 		log.Fatal(err)
 	}
 	fft.fileLines = append(fft.fileLines, linesForTranslate{i, "", ""})
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+
+		}
+	}(f)
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		str = scanner.Text()
